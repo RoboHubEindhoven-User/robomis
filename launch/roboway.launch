@@ -1,0 +1,3 @@
+<launch>
+	<node pkg="roboway" type="RoboWayNode" name="RoboWayNode" launch-prefix="sudo -E nice -n N"/>
+</launch>

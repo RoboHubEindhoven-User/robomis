@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/zinki/workspace/catkin_ws/devel/include",
+                "/opt/ros/kinetic/include",
+                "/home/zinki/workspace/catkin_ws/src/assignment1/include",
+                "/home/zinki/workspace/catkin_ws/src/demoqt/include",
+                "/home/zinki/workspace/catkin_ws/src/faraday_drive/include",
+                "/home/zinki/workspace/catkin_ws/src/roboway/include",
+                "/home/zinki/workspace/catkin_ws/src/usb_camera/include",
+                "/usr/include"
+            ],
+            "name": "Linux",
+            "intelliSenseMode": "gcc-x64"
+        }
+    ],
+    "version": 4
+}
