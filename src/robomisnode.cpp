@@ -1,5 +1,5 @@
 /*
- * @file /src/robomisnode.cpp
+ * @file /src/RobomisNode.cpp
  *
  * @brief Ros communication central!
  *
@@ -18,7 +18,11 @@
 #include<cctype>
 #include <iomanip>
 #include "../include/robomis/robomisnode.hpp"
+#include <robomis/systemconfig.h>
 #include <mission_protobuf/task_action.pb.h>
+#include <robomis/messageaccess.h>
+#include <QDebug>
+#include <stdio.h>
 
 #define FRAME_ID         "/map"
 #define LINK             "/base_link"
@@ -29,17 +33,17 @@
 namespace ziros {
 
 
-robomisNode::robomisNode(int argc, char** argv ) :
+
+//auto& MessageKeeper = MessageAccess::Instance();
+
+auto& MessageKeeper = MessageAccess::get();
+
+RobomisNode::RobomisNode(int argc, char** argv) :
     init_argc(argc),
-    init_argv(argv),
-    shelf_nr(0),
-    conveyor_nr(0),
-    workstation_nr(0),
-    waypoint_nr(0),
-    pre_plaform_nr(0)
+    init_argv(argv)
     {}
 
-robomisNode::~robomisNode() {
+RobomisNode::~RobomisNode() {
     if(ros::isStarted()) {
       ros::shutdown(); // explicitly needed since we use ros::start();
       ros::waitForShutdown();
@@ -47,26 +51,26 @@ robomisNode::~robomisNode() {
         wait();
 }
 
-bool robomisNode::init() {
+bool RobomisNode::init() {
         ros::init(init_argc,init_argv,"robomis_node");
         if ( ! ros::master::check() ) {
                 return false;
         }
         ros::start(); // explicitly needed since our nodehandle is going out of scope.
         ros::NodeHandle n;
-        // Add your ros communications here.
-        waypoint_pub = n.advertise<robomis::WaypointData>("/robomis/waypoint", 1000);
-//        feedback_sub = n.subscribe("chatter", 1000, feedbackCallback);
-        feedback_sub = n.subscribe("/ar_marker", 1000, &robomisNode::waypointMarkerCallback, this);
-        waypoint_marker_sub  = n.subscribe("/move_base/feedback", 1000, &robomisNode::feedbackCallback, this);
-//         waypoint_marker_sub  = n.subscribe("/odom", 1000, &robomisNode::feedbackCallback, this);
-        listener = new tf::TransformListener();
+
+        waypoint_pub        = n.advertise<robomis::WaypointData>("/robomis/waypoint", 1000);
+        feedback_sub        = n.subscribe("/ar_marker", 1000, &RobomisNode::waypointMarkerCallback, this);
+        robot_arm_sub       = n.subscribe("/joint_states", 1000, &RobomisNode::jointStateCallback, this);
+        waypoint_marker_sub = n.subscribe("/move_base/feedback", 1000, &RobomisNode::feedbackCallback, this);
+        listener            = new tf::TransformListener();
+
         listener->waitForTransform(FRAME_ID, LINK, ros::Time(0), ros::Duration(4));
 
         return true;
 }
 
-bool robomisNode::init(const std::string &master_url, const std::string &host_url) {
+bool RobomisNode::init(const std::string &master_url, const std::string &host_url) {
         std::map<std::string,std::string> remappings;
         remappings["__master"] = master_url;
         remappings["__hostname"] = host_url;
@@ -76,40 +80,36 @@ bool robomisNode::init(const std::string &master_url, const std::string &host_ur
         }
         ros::start(); // explicitly needed since our nodehandle is going out of scope.
         ros::NodeHandle n;
-        // Add your ros communications here.
-        waypoint_pub = n.advertise<robomis::WaypointData>("/robomis/waypoint", 1000);
-        feedback_sub = n.subscribe("/ar_marker", 1000, &robomisNode::waypointMarkerCallback, this);
-//        waypoint_marker_sub = n.subscribe("/odom", 1000, &robomisNode::feedbackCallback, this);
-        waypoint_marker_sub  = n.subscribe("/move_base/feedback", 1000, &robomisNode::feedbackCallback, this);
-        listener = new tf::TransformListener();
+
+
+        waypoint_pub        = n.advertise<robomis::WaypointData>("/robomis/waypoint", 1000);
+        feedback_sub        = n.subscribe("/ar_marker", 1000, &RobomisNode::waypointMarkerCallback, this);
+        robot_arm_sub       = n.subscribe("/joint_states", 1000, &RobomisNode::jointStateCallback, this);
+        waypoint_marker_sub = n.subscribe("/move_base/feedback", 1000, &RobomisNode::feedbackCallback, this);
+        listener            = new tf::TransformListener();
+
         listener->waitForTransform(FRAME_ID, LINK, ros::Time(0), ros::Duration(4));
 
         start();
         return true;
 }
 
-void robomisNode::run() {
-        ros::Rate loop_rate(1);
+void RobomisNode::run() {
+        ros::Rate loop_rate(10);
         int count = 0;
         while ( ros::ok() ) {
 
-
-//                std_msgs::String msg;
-//                std::stringstream ss;
-//                ss << "hello world " << count;
-//                msg.data = ss.str();
-//                waypoint_pub.publish(msg);
-//                log(Info,std::string("I sent: ")+msg.data);
-                ros::spinOnce();
-                loop_rate.sleep();
-                ++count;
+            ros::spinOnce();
+            loop_rate.sleep();
+            ++count;
         }
         std::cout << "Ros shutdown, proceeding to close the gui." << std::endl;
         Q_EMIT rosShutdown(); // used to signal the gui for a shutdown (useful to roslaunch)
+
 }
 
 
-void robomisNode::log( const LogLevel &level, const std::string &msg) {
+void RobomisNode::log( const LogLevel &level, const std::string &msg) {
 //        logging_model.insertRows(logging_model.rowCount(),1);
 //        std::stringstream logging_model_msg;
 //        switch ( level ) {
@@ -144,7 +144,7 @@ void robomisNode::log( const LogLevel &level, const std::string &msg) {
 //        Q_EMIT loggingUpdated(); // used to readjust the scrollbar
 }
 
-void robomisNode::addWaypoint(int instance_id, std::string name, bool scan, double pos_x, double pos_y, double pos_z, double orient_x, double orient_y, double orient_z, double orient_w) {
+void RobomisNode::addWaypoint(int instance_id, std::string name, bool scan, double pos_x, double pos_y, double pos_z, double orient_x, double orient_y, double orient_z, double orient_w) {
     robomis::Waypoint waypoint;
 
     waypoint.type               = getLocationIdentifierType(name);
@@ -161,12 +161,12 @@ void robomisNode::addWaypoint(int instance_id, std::string name, bool scan, doub
     rob_msg.waypoints.push_back(waypoint);
 }
 
-std::string robomisNode::createWaypointDescription(std::string location, int instance_id) {
+std::string RobomisNode::createWaypointDescription(std::string location, int instance_id) {
     return (location == "Conveyor belt" || location == "Precision Platform" || location == "Entrance" || location == "Exit") ?
                 location : location + " " + std::to_string(instance_id);
 }
 
-void robomisNode::updateWaypoint(int index, int instance_id, std::string name, bool scan, double pos_x, double pos_y, double pos_z, double orient_x, double orient_y, double orient_z, double orient_w) {
+void RobomisNode::updateWaypoint(int index, int instance_id, std::string name, bool scan, double pos_x, double pos_y, double pos_z, double orient_x, double orient_y, double orient_z, double orient_w) {
 
     int list_size = static_cast<int>(rob_msg.waypoints.size());
 
@@ -189,7 +189,7 @@ void robomisNode::updateWaypoint(int index, int instance_id, std::string name, b
     rob_msg.waypoints[index] = waypoint;
 }
 
-int robomisNode::getLocationIdentifierType(std::string location) {
+int RobomisNode::getLocationIdentifierType(std::string location) {
     if (location == "Entrance")
         return 99;
     if (location == "Exit")
@@ -207,46 +207,92 @@ int robomisNode::getLocationIdentifierType(std::string location) {
     return -1;
 }
 
-int robomisNode::getNextLocationInstanceId(std::string location) {
+int RobomisNode::getNextLocationInstanceId(std::string location) {
 //    if(getLocationIdentifierType(name);)
     int count = getNrOfLocationWaypoints(location);
     return count + 1;
 }
 
-int robomisNode::getCurrentWaypointMarker() {
+int RobomisNode::getCurrentWaypointMarker() {
 
 }
 
-void robomisNode::publishWaypoints(void) {
+void RobomisNode::publishWaypoints(void) {
     waypoint_pub.publish(rob_msg);
 }
 
-void robomisNode::reset() {
+void RobomisNode::reset() {
     rob_msg.frame = "";
     rob_msg.waypoints.clear();
 }
 
-void robomisNode::waypointMarkerCallback(const std_msgs::String::ConstPtr& msg) {
-//    std::cout << msg->data <<std::endl;
+void RobomisNode::waypointMarkerCallback(const std_msgs::String::ConstPtr& msg) {
+    std::cout << msg->data <<std::endl;
     if(markerFunctPtr != nullptr)
         markerFunctPtr(msg->data);
 }
 
-//void robomisNode::feedbackCallback(const nav_msgs::Odometry::ConstPtr& msg) {
-//    way_msg.pose = msg->pose.pose;
-//    ROS_INFO("Pos X=%.3f, Pos Y: %.3f, Pos Z: %.3f", msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z);
-//    if(feedbackFunctPtr != nullptr)
-//        feedbackFunctPtr(way_msg);
-//}
-void robomisNode::feedbackCallback(const move_base_msgs::MoveBaseActionFeedback::ConstPtr& msg) {
-    way_msg.pose = msg->feedback.base_position.pose;
-    ROS_INFO("Pos X=%.3f, Pos Y: %.3f, Pos Z: %.3f",  way_msg.pose.position.x,  way_msg.pose.position.y,  way_msg.pose.position.z);
-    if(feedbackFunctPtr != nullptr)
-        feedbackFunctPtr(way_msg);
+void RobomisNode::feedbackCallback(const move_base_msgs::MoveBaseActionFeedback::ConstPtr& msg) {
+    MessageKeeper.lock(&mutex);
+    if(MessageKeeper.getShouldGetRobotPosition()){
+        MessageKeeper.setRobotPosition(msg->feedback.base_position.pose);
+    }
+}
+
+void RobomisNode::jointStateCallback(const sensor_msgs::JointState::ConstPtr& msg) {
+ joint_state.position.clear();
+    sensor_msgs::JointState data;
+    robot_arm::JointPose pose;
+
+     pose.joint_1 = msg->position[0];
+     pose.joint_2 = msg->position[1];
+     pose.joint_3 = msg->position[2];
+     pose.joint_4 = msg->position[3];
+     pose.joint_5 = msg->position[4];
+     pose.joint_6 = msg->position[5];
+
+
+     auto& message = MessageAccess::get();
+     message.lock(&mutex);
+     message.setRobotArmPose(pose);
+}
+
+mission_ros_msgs::TaskObjective RobomisNode::getTaskObjectFromRef(const mission_ros_msgs::TaskObjective::ConstPtr& msg) {
+    mission_ros_msgs::TaskObjective data;
+    data.identifier = msg->identifier;
+
+    for (size_t i = 0; i < msg->tasks.size(); i++){
+        data.tasks[i] = msg->tasks[i];
+    }
+    return data;
+}
+
+void RobomisNode::todoTasksCallback(const mission_ros_msgs::TaskObjective::ConstPtr& msg) {
+    if(todoTaskPtr) {
+        todoTaskPtr(getTaskObjectFromRef(msg));
+    }
+}
+
+void RobomisNode::completedTasksCallback(const mission_ros_msgs::TaskObjective::ConstPtr& msg) {
+    if(completedTasksPtr) {
+        completedTasksPtr(getTaskObjectFromRef(msg));
+    }
+}
+
+void RobomisNode::currentTasksCallback(const mission_ros_msgs::TaskObjective::ConstPtr& msg) {
+    if(currentTasksPtr) {
+        currentTasksPtr(getTaskObjectFromRef(msg));
+    }
+}
+
+void RobomisNode::objectHolderCallback(const mission_ros_msgs::TaskObjective::ConstPtr& msg) {
+    if(objectHolderPtr) {
+        objectHolderPtr(getTaskObjectFromRef(msg));
+    }
 }
 
 
-int robomisNode::getNrOfLocationWaypoints(std::string location) {
+int RobomisNode::getNrOfLocationWaypoints(std::string location) {
 
     int count = 0;
     for(size_t i = 0; i < rob_msg.waypoints.size(); i++){
@@ -257,7 +303,7 @@ int robomisNode::getNrOfLocationWaypoints(std::string location) {
     return count;
 }
 // get the current transform
-tf::StampedTransform robomisNode::getTransform()
+tf::StampedTransform RobomisNode::getTransform()
 {
 //  tf::StampedTransform transform;
 //  try
@@ -272,7 +318,7 @@ tf::StampedTransform robomisNode::getTransform()
 }
 
 // Get the robot's current position from the transform
-geometry_msgs::Pose robomisNode::getRobotPosition() {
+geometry_msgs::Pose RobomisNode::getRobotPosition() {
   geometry_msgs::Pose pose;
 //  tf::StampedTransform transform; = getTransform();
 
@@ -290,16 +336,17 @@ geometry_msgs::Pose robomisNode::getRobotPosition() {
   pose.position.z = transform.getOrigin().z();
 
   tf::quaternionTFToMsg(transform.getRotation(), pose.orientation);
-
+#if ROBOMIS_DEBUG
   ROS_INFO("Pose X=%.3f, Pose Y: %.3f, Pose Z: %.3f, Orient W: %f, Orient Z: %f",  pose.position.x,  pose.position.y,  pose.position.z, pose.orientation.w, pose.orientation.z);
-
+#endif
 
   return pose;
 }
 
-void robomisNode::newPosereceived() {
-//    Q_EMIT getRobotPosition();
-//   Q_EMIT newPoseSignal(getRobotPosition());
+sensor_msgs::JointState RobomisNode::getRobotArmPose() {
+    return joint_state;
 }
+
+
 
 } /* namespace ziros */

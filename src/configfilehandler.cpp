@@ -1,4 +1,4 @@
-#include "../include/robomis/config_file_handler.h"
+#include <robomis/configuration.h>
 #include <iostream>
 #include <stddef.h>
 
@@ -30,6 +30,7 @@ bool ConfigFileHandler::saveWaypoint(std::string filename, Waypoint &waypoint)
         {
             writeStream(waypoint, out, filename);
             out.close();
+            return true;
         }
         else
         {
@@ -79,9 +80,10 @@ bool ConfigFileHandler::saveWaypoints(std::string filename, std::vector<Waypoint
         if (out)
         {
             for (size_t i = 0; i < waypoints.size(); i++) {
-                writeStream(waypoints[i], out, filename, i + 1);
+                writeStream(waypoints[i], out, filename, static_cast<int>(i + 1));
             }
             out.close();
+            return true;
         }
         else
         {
@@ -132,9 +134,10 @@ bool ConfigFileHandler::saveRobotArmPoses(std::string filename, std::vector<robo
         if (out)
         {
             for (size_t i = 0; i < poses.size(); i++) {
-                writeStream(poses[i], out, filename, i + 1);
+                writeStream(poses[i], out, filename, static_cast<int>(i + 1));
             }
             out.close();
+            return true;
         }
         else
         {
@@ -148,6 +151,55 @@ bool ConfigFileHandler::saveRobotArmPoses(std::string filename, std::vector<robo
         message = ex.what();
     }
     return false;
+}
+
+
+bool ConfigFileHandler::loadObjects(std::string filename, std::vector<mission_data::ObjectIdentifier> &objects) {
+    try
+  {
+      YAML::Node node = YAML::LoadFile(filename);
+      error = false;
+      message = "";
+
+      for (YAML::const_iterator it = node.begin(); it != node.end(); ++it) {
+          mission_data::ObjectIdentifier obj;
+          readYamlNode(obj, it);
+          objects.push_back(obj);
+      }
+      return true;
+  }
+  catch (YAML::ParserException &ex)
+  {
+      message = ex.what();
+  }
+
+  return false;
+}
+
+bool ConfigFileHandler::saveObjects(std::string filename, std::vector<mission_data::ObjectIdentifier> objects) {
+    try
+     {
+         std::ofstream out(filename);
+         if (out)
+         {
+             for (size_t i = 0; i < objects.size(); i++) {
+                 writeStream(objects[i], out, filename, static_cast<int>(i + 1));
+             }
+             out.close();
+             return true;
+         }
+         else
+         {
+             error = true;
+             message = "Failed to open " + filename + " for writing.";
+         }
+     }
+     catch (std::exception ex)
+     {
+         error = true;
+         message = ex.what();
+     }
+     return false;
 }
 
 void ConfigFileHandler::writeStream(const Waypoint &waypoint, std::ostream &out, const std::string &filename, int id)
@@ -174,6 +226,18 @@ void ConfigFileHandler::writeStream(const robot_arm::JointPose &pose, std::ostre
     }
 }
 
+void ConfigFileHandler::writeStream(const mission_data::ObjectIdentifier &object, std::ostream &out, const std::string &filename, int id)
+{
+    error = false;
+    message = "";
+    YAML::Node node;
+    writeNode(object, node, id);
+    if (!error)
+    {
+        out << node<<'\n';
+    }
+}
+
 
 void ConfigFileHandler::writeNode(const Waypoint &wp, YAML::Node &node, int id)
 {
@@ -187,8 +251,16 @@ void ConfigFileHandler::writeNode(const robot_arm::JointPose &pose, YAML::Node &
     node[id_str] = pose;
 }
 
+void ConfigFileHandler::writeNode(const mission_data::ObjectIdentifier &object, YAML::Node &node, int id)
+{
+    std::string id_str = "object/object" + std::to_string(id);
+    node[id_str] = object;
+}
+
 ConfigFileHandler::Key ConfigFileHandler::getKeyEnumWaypoint(std::string map_key)
 {
+    if (map_key == "id")
+        return ConfigFileHandler::Key::ID;
     if (map_key == "x")
         return ConfigFileHandler::Key::X;
     if (map_key == "y")
@@ -200,7 +272,6 @@ ConfigFileHandler::Key ConfigFileHandler::getKeyEnumWaypoint(std::string map_key
     if (map_key == "description") return ConfigFileHandler::Key::LocationDescription;
     if (map_key == "type") return ConfigFileHandler::Key::LocationType;
     if (map_key == "instance_id") return ConfigFileHandler::Key::LocationInstanceId;
-    if (map_key == "id") return ConfigFileHandler::Key::ServiceAreaId;
     if (map_key == "length") return ConfigFileHandler::Key::Length;
     if (map_key == "width") return ConfigFileHandler::Key::Width;
     if (map_key == "height") return ConfigFileHandler::Key::Height;
@@ -233,11 +304,25 @@ ConfigFileHandler::Key ConfigFileHandler::getKeyEnumWaypointType(std::string map
     return ConfigFileHandler::Key::None;
 }
 
+ConfigFileHandler::Key ConfigFileHandler::getKeyEnumObjectType(std::string map_key)
+{
+    if (map_key == "id") return ConfigFileHandler::Key::ID;
+    if (map_key == "instance_id") return ConfigFileHandler::Key::InstanceId;
+    if (map_key == "type") return ConfigFileHandler::Key::Type;
+    if (map_key == "description") return ConfigFileHandler::Key::Description;
+
+    return ConfigFileHandler::Key::None;
+}
+
 bool ConfigFileHandler::setWaypointScaler(Waypoint &waypoint, const YAML::Node &node, std::string key)
 {
 
     switch (getKeyEnumWaypoint(key))
     {
+    case ConfigFileHandler::Key::ID:
+//        std::cout<<"Waypoint id: "<<node.as<int>()<<std::endl;
+//        waypoint.id = node.as<int>();
+        break;
     case ConfigFileHandler::Key::LocationDescription:
         waypoint.location.description = node.as<std::string>();
         break;
@@ -246,9 +331,6 @@ bool ConfigFileHandler::setWaypointScaler(Waypoint &waypoint, const YAML::Node &
         break;
     case ConfigFileHandler::Key::LocationInstanceId:
         waypoint.location.instance_id = node.as<int>();
-        break;
-    case ConfigFileHandler::Key::ServiceAreaId:
-        waypoint.service_area.id = node.as<int>();
         break;
     case ConfigFileHandler::Key::Length:
         waypoint.service_area.length = node.as<double>();
@@ -350,6 +432,28 @@ bool ConfigFileHandler::setJointPoseScaler(robot_arm::JointPose& pose, const YAM
     return true;
 }
 
+bool ConfigFileHandler::setObjectScaler(mission_data::ObjectIdentifier& object, const YAML::Node  &node, std::string key) {
+
+    switch (getKeyEnumObjectType(key))
+    {
+    case ConfigFileHandler::Key::ID:
+        object.id = node.as<int>();
+        break;
+    case ConfigFileHandler::Key::InstanceId:
+        object.instance_id = node.as<int>();
+        break;
+    case ConfigFileHandler::Key::Type:
+        object.type = node.as<int>();
+        break;
+    case ConfigFileHandler::Key::Description:
+        object.description = node.as<std::string>();
+        break;
+    default:
+        return false;
+    }
+    return true;
+}
+
 bool ConfigFileHandler::readYamlNode(Waypoint &waypoint, const YAML::Node &node)
 {
     YAML::const_iterator tmp_it;
@@ -422,6 +526,9 @@ bool ConfigFileHandler::readYamlNodes(Waypoint &waypoint, YAML::const_iterator &
         for (YAML::const_iterator it = node.begin(); it != node.end(); ++it)
         {
             ConfigFileHandler::Key key = getKeyEnumWaypointType(it->first.as<std::string>());
+            if(it->first.as<std::string>() == "id"){
+                waypoint.id = it->second.as<int>();
+            }
 
             if ((pose_key == ConfigFileHandler::Key::None) && (key != ConfigFileHandler::Key::None)){
                 pose_key = key;
@@ -478,6 +585,19 @@ bool ConfigFileHandler::readYamlNode(robot_arm::JointPose &pose, YAML::const_ite
     pose.joint_4     = node["joint_4"].as<double>();
     pose.joint_5     = node["joint_5"].as<double>();
     pose.joint_6     = node["joint_6"].as<double>();
+
+    return true;
+}
+
+bool ConfigFileHandler::readYamlNode(mission_data::ObjectIdentifier &object, YAML::const_iterator &node_it)
+{
+    const YAML::Node &key = node_it->first;
+    const YAML::Node &node = node_it->second;
+
+    object.id          = node["id"].as<int>();
+    object.instance_id = node["instance_id"].as<int>();
+    object.type        = node["type"].as<int>();
+    object.description = node["description"].as<std::string>();
 
     return true;
 }

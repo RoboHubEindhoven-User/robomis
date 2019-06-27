@@ -7,6 +7,7 @@
 // #include <mission_data/robot_arm.h>
 #include <mission_data_types/waypoint.h>
 #include <mission_data_types/robot_arm.h>
+#include <mission_data_types/objects.h>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,10 @@ class ConfigFileHandler
 {
 public:
     enum class Key : int {
+        ID,
+        Type,
+        InstanceId,
+        Description,
         None,
         LocationDescription,
         LocationType,
@@ -42,27 +47,43 @@ public:
     };
     ConfigFileHandler() { }
     ~ConfigFileHandler() = default;
+
     bool loadWaypoint(std::string filename, Waypoint &waypoint);
     bool saveWaypoint(std::string filename, Waypoint &waypoint);
+
     bool loadWaypoints(std::string filename, std::vector<Waypoint> &waypoints);
     bool saveWaypoints(std::string filename, std::vector<Waypoint> waypoints);
+
     bool loadRobotArmPoses(std::string filename, std::vector<robot_arm::JointPose> &poses);
     bool saveRobotArmPoses(std::string filename, std::vector<robot_arm::JointPose> poses);
+
+    bool loadObjects(std::string filename, std::vector<mission_data::ObjectIdentifier> &objects);
+    bool saveObjects(std::string filename, std::vector<mission_data::ObjectIdentifier> objects);
 private:
     void writeStream(const Waypoint &waypoint, std::ostream &out, const std::string &filename, int id = 1);
     void writeStream(const robot_arm::JointPose &pose, std::ostream &out, const std::string &filename, int id = 1);
+    void writeStream(const mission_data::ObjectIdentifier &object, std::ostream &out, const std::string &filename, int id = 1);
+
     void writeNode(const Waypoint &wp, YAML::Node &node, int id);
     void writeNode(const robot_arm::JointPose &pose, YAML::Node &node, int id);
+    void writeNode(const mission_data::ObjectIdentifier &object, YAML::Node &node, int id);
+
     bool setWaypointScaler(Waypoint &waypoint, const YAML::Node  &node, std::string key);
     bool setPositionScaler(Waypoint &waypoint, const YAML::Node  &node, std::string key, ConfigFileHandler::Key & pose_key);
     bool setOrientationScaler(Waypoint &waypoint, const YAML::Node  &node, std::string key, ConfigFileHandler::Key & pose_key);
     bool setJointPoseScaler(robot_arm::JointPose& pose, const YAML::Node  &node, std::string key);
+    bool setObjectScaler(mission_data::ObjectIdentifier& object, const YAML::Node  &node, std::string key);
+
     bool readYamlNode(Waypoint &waypoint, const YAML::Node &node);
     bool readYamlNode(robot_arm::JointPose& pose, YAML::const_iterator &node_it);
     bool readYamlNodes(Waypoint &waypoint, YAML::const_iterator &node_it);
+    bool readYamlNode(mission_data::ObjectIdentifier &object, YAML::const_iterator &node_it);
+
     Key getKeyEnumWaypoint(std::string map_key);
     Key getKeyEnumRobotPose(std::string map_key);
     Key getKeyEnumWaypointType(std::string map_key);
+    Key getKeyEnumObjectType(std::string map_key);
+
     bool error;
     std::string message;
 };
@@ -196,6 +217,7 @@ struct convert<Waypoint> {
   static Node encode(const Waypoint& wp) {
     Node node;
     // node.SetStyle(YAML::EmitterStyle::Flow);
+    node["id"]           = wp.id;
     node["location"]     = wp.location;
     node["service_area"] = wp.service_area;
     node["pose"]         = wp.pose;
@@ -208,6 +230,7 @@ struct convert<Waypoint> {
       return false;
     }
 
+    wp.id           = node["id"].as<int>();
     wp.location     = node["location"].as<Location>();
     wp.service_area = node["service_area"].as<ServiceArea>();
     wp.pose         = node["pose"].as<geometry::Pose>();
@@ -249,4 +272,31 @@ struct convert<robot_arm::JointPose> {
     return true;
   }
 };
+
+template<>
+struct convert<mission_data::ObjectIdentifier> {
+  static Node encode(const mission_data::ObjectIdentifier& object) {
+    Node node;
+    node["id"]          = object.id;
+    node["instance_id"] = object.instance_id;
+    node["type"]        = object.type;
+    node["description"] = object.description;
+
+    return node;
+  }
+
+  static bool decode(const Node& node, mission_data::ObjectIdentifier& object) {
+    if(!node.IsSequence() || node.size() != 3) {
+      return false;
+    }
+
+    object.id           = node["id"].as<int>();
+    object.type         = node["type"].as<int>();
+    object.instance_id  = node["instance_id"].as<int>();
+    object.description  = node["description"].as<std::string>();
+
+    return true;
+  }
+};
+
 } /* namespace YAML */

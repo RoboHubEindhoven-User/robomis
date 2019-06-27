@@ -16,17 +16,22 @@
   <build_export_depend>qt_build roscpp</build_export_depend>
   <build_depend>rospy</build_depend>
   <build_depend>std_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>  <!--Geometry-->
   <build_depend>message_generation</build_depend> <!--Custom-->
   <build_depend>tf</build_depend>
   <build_depend>mission_protobuf</build_depend>
   <build_depend>mission_data_types</build_depend>
+  <build_depend>mission_ros_msgs</build_depend>
 
   <build_export_depend>mission_data_types</build_export_depend>
   <build_export_depend>mission_protobuf</build_export_depend>
+  <build_export_depend>mission_ros_msgs</build_export_depend>
 
   <exec_depend>mission_protobuf</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>mission_data_types</exec_depend>
+  <exec_depend>mission_ros_msgs</exec_depend>
   <exec_depend>qt_build roscpp</exec_depend>
 
   <export></export>

@@ -13,12 +13,14 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  sensor_msgs
   genmsg
   move_base_msgs
   geometry_msgs
   tf
   mission_protobuf
   mission_data_types
+  mission_ros_msgs
   message_generation
 )
 
@@ -65,6 +67,7 @@ pkg_check_modules(YAML_CPP yaml-cpp)
 generate_messages(
   DEPENDENCIES
   std_msgs
+  sensor_msgs
   geometry_msgs
 #  Waypoint.msg
 )
@@ -74,7 +77,7 @@ generate_messages(
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-    CATKIN_DEPENDS mission_protobuf mission_data_types
+    CATKIN_DEPENDS mission_protobuf mission_data_types mission_ros_msgs
 #  DEPENDS system_lib
 )
 
@@ -112,11 +115,12 @@ FIND_PACKAGE( Boost 1.40 COMPONENTS program_options REQUIRED )
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(QT ${QT} network ftp)
 
-
-file( GLOB_RECURSE HDRS_FILES include/robomis/*.h include/robomis/*.hpp )
-file( GLOB_RECURSE SRCS_FILES src/*.cpp )
+file( GLOB_RECURSE HDRS_FILES include/robomis/*.h include/robomis/*.hpp include/protonet/*.h)
+file( GLOB_RECURSE SRCS_FILES src/*.cpp src/protonet/*.cpp)
 file( GLOB_RECURSE UI_FILES src/*.ui )
+
 
 qt4_wrap_cpp( MOC_SRCS ${HDRS_FILES} )
 qt4_wrap_ui( UI_HDRS ${UI_FILES} )

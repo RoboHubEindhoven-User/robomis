@@ -1,0 +1,6 @@
+#ifndef SYSTEMCONFIG_H
+#define SYSTEMCONFIG_H
+
+#define ROBOMIS_DEBUG 0
+
+#endif // SYSTEMCONFIG_H

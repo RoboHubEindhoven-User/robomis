@@ -3,6 +3,7 @@
 
 #include <string>
 #include <mission_protobuf/task_action.pb.h>
+#include <mission_protobuf/task_specification.pb.h>
 
 class WaypointHelper {
  using LocationType = mission_protobuf::LocationIdentifier;
@@ -53,7 +54,23 @@ public:
         return "Invalid data";
     }
 
+    static mission_protobuf::Task::TaskType  getTaskType(int type)  {
+        if (type == 1) return mission_protobuf::Task::TRANSPORTATION;
+        else if (type == 2) if (type == 1) return mission_protobuf::Task::NAVIGATION;
 
+        return mission_protobuf::Task::UNKNOWN;
+    }
+
+    static mission_protobuf::LocationIdentifier::LocationType getLocationByDescription(std::string description) {
+        if(description == "Entrance") return LocationType::EN;
+        if(description == "Shelf") return LocationType::SH;
+        if(description == "Workstation") return LocationType::WS;
+        if(description == "Conveyor belt") return LocationType::CB;
+        if(description == "Way Point") return LocationType::WP;
+        if(description == "Precision Platform") return LocationType::PP;
+        if(description == "Exit") return LocationType::EX;
+        return LocationType::NONE;
+    }
 
     static mission_protobuf::LocationIdentifier::LocationType getLocationTypeByIndex(int index) {
         index = (index == 100) ? 6 : index;
