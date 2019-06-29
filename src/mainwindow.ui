@@ -238,7 +238,7 @@ QTabBar::tab:left:only-one, QTabBar::tab:right:only-one {
      <enum>QTabWidget::North</enum>
     </property>
     <property name="currentIndex">
-     <number>5</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="tabFile">
      <attribute name="title">
@@ -1171,7 +1171,7 @@ QTabBar::tab:left:only-one, QTabBar::tab:right:only-one {
     </widget>
     <widget class="QWidget" name="tab">
      <attribute name="title">
-      <string>Waypoints</string>
+      <string>Way-Points</string>
      </attribute>
      <widget class="QTabWidget" name="tabWidgetProperties">
       <property name="geometry">
@@ -1190,7 +1190,7 @@ QTabBar::tab:left:only-one, QTabBar::tab:right:only-one {
       </property>
       <widget class="QWidget" name="tab_6">
        <attribute name="title">
-        <string>Waypoints</string>
+        <string>Way-Points</string>
        </attribute>
        <widget class="QLineEdit" name="lineEditFrameID">
         <property name="geometry">
@@ -1845,7 +1845,7 @@ QTabBar::tab:left:only-one, QTabBar::tab:right:only-one {
       </widget>
       <widget class="QWidget" name="tab_10">
        <attribute name="title">
-        <string>Workstation</string>
+        <string>Service Areas</string>
        </attribute>
        <widget class="QLineEdit" name="lineEditWorkSurfLength">
         <property name="geometry">
