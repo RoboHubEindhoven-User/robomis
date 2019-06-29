@@ -143,7 +143,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent) :
     timer2 = new QTimer(this);
     timer3 = new QTimer(this);
 
-    connect(timer1, SIGNAL(timeout()), this, SLOT(updateRobotPositionDisplay()));
+    connect(timer1, SIGNAL(timeout()), this, SLOT(RobotPositionDisplay()));
 //    timer->start(1000);
 
     connect(timer2, SIGNAL(timeout()), this, SLOT(updateRobotArmPose()));
@@ -232,7 +232,6 @@ void MainWindow::updateRobotPositionDisplay() {
 void MainWindow::updateRobotArmPose() {
 
 //    if (is_auto_display_pose) {
-        printf("updateRobotArmPose...\n");
         MessageKeeper.lock(&mutex);
         robot_arm::JointPose pose = MessageKeeper.robotArmPose();
         ui->lineEditPoseJ1->setText(QString::number(pose.joint_1));
