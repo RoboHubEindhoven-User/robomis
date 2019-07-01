@@ -44,7 +44,7 @@ Makefile:138: recipe for target 'all' failed
 make: * [all] Error 2
 Invoking "make -j4 -l4" failed
 ```
-Follow this instruction to resolve the error
+Follow these instructions to resolve the error
 
 Step 1: Navigate to your boost as_binary_operator header file for example.
 ```
