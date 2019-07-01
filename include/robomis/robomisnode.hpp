@@ -38,7 +38,7 @@
 #include "robomis/Waypoint.h"
 #include "robomis/WaypointData.h"
 #include <mission_ros_msgs/TaskObjective.h>
-#include <robomis/messageaccess.h>
+#include "messageaccess.h"
 
 /*****************************************************************************
 ** Namespaces

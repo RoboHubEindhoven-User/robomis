@@ -5,8 +5,6 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-//    MessageAccess *message = &MessageAccess::Instance();
-
     MainWindow form(argc, argv);
 
     form.show();

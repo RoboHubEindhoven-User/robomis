@@ -1,4 +1,4 @@
-#include <robomis/configuration.h>
+#include "../include/robomis/configuration.h"
 #include <iostream>
 #include <stddef.h>
 
