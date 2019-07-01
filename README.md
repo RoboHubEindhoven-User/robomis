@@ -70,6 +70,12 @@ namespace BOOST_JOIN(BOOST_TT_TRAIT_NAME,_impl) {
 } 
 #endif
 ```
+Step 3:
+
+```
+cd catkin_ws/
+catkin_make
+```
 
 ## Usage
 To use this package, makesure the pc running this package is on the same network as the robot.
