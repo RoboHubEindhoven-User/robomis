@@ -6,7 +6,6 @@
 #include "configuration.h"
 #include "robomis/Waypoint.h"
 #include "robomis/WaypointData.h"
-#include "robomis/LocationIdentifier.h"
 #include <QDoubleValidator>
 #include <QIntValidator>
 #include <QPalette>
