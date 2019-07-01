@@ -14,10 +14,16 @@ To use this pacakge, the following dependencies have to installed.
 sudo apt-get update
 sudo apt-get install protobuf-compiler libprotobuf-dev libprotoc-dev libyaml-cpp-dev libssl-dev 
 ```
-clone this package in to your catkin workspace;
+Clone the mission_planner_comm package if it doesn't exist on your catkin workspace
 
 ```
 cd catkin_ws/src
+git clone https://github.com/RoboHubEindhoven/mission_planner_comm.git
+
+```
+clone the robomis package in to your catkin workspace;
+
+```
 git clone https://github.com/RoboHubEindhoven/robomis.git
 cd ..
 catkin_make
