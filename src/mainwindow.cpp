@@ -15,7 +15,7 @@
 #include <iomanip>
 #include <yaml-cpp/yaml.h>
 #include <mission_protobuf/task_specification.pb.h>
-#include <robomis/messageaccess.h>
+#include "../include/robomis/messageaccess.h"
 
 
 int counter = 0;
