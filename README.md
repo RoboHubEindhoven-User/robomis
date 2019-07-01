@@ -46,7 +46,7 @@ Invoking "make -j4 -l4" failed
 ```
 Follow these instructions to resolve the error
 
-Step 1: Navigate to your boost as_binary_operator header file for example.
+Step 1: Open the boost as_binary_operator header file with your favorite editor for example.
 ```
 sudo gedit /usr/include/boost/type_traits/detail/has_binary_operator.hpp 
 ```
