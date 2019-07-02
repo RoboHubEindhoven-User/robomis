@@ -1,8 +1,22 @@
 # Robot Mission Station (robomis)
 
 The robomis application stands for Robot Mission Station. This application provides a clean GUI, which can be use to set robot mission configurations and monitor robot mission status. robomis was developed with C++ and QT.
-To know more about this package, you can visit the robomis [wiki](https://github.com/RoboHubEindhoven/robomis/wiki).
 
+In the wiki links bellow, you can find more in-depth information about this package.
+
+* [Introduction](https://github.com/RoboHubEindhoven/robomis/wiki)
+
+**Software Description**
+* [Software Architecture](https://github.com/RoboHubEindhoven/robomis/wiki/Software-Architecture)
+* [UML Class Diagram](https://github.com/RoboHubEindhoven/robomis/wiki/UML-Class-Diagram)
+
+**Getting started on robomis**
+* [Way-point Configuration](https://github.com/RoboHubEindhoven/robomis/wiki/Way-point-Configuration)
+* [Service Area Configuration](https://github.com/RoboHubEindhoven/robomis/wiki/Service-Area-Configuration)
+* [Robot Arm Positions Configuration](https://github.com/RoboHubEindhoven/robomis/wiki/Robot-Arm-Positions-Configuration)
+* [Mission Planner](https://github.com/RoboHubEindhoven/robomis/wiki/Mission-Planner)
+* [Mission Overview](https://github.com/RoboHubEindhoven/robomis/wiki/Mission-Overview)
+* [Saving and Loading Configuration files](https://github.com/RoboHubEindhoven/robomis/wiki/Saving-and-Loading-Configuration-files)
 
 ## Getting Started
 For this package, it is assumed you using Ubuntu 16.04 LTS with ROS Kinetic. This package has not been tested on other OS and ROS versions. 
