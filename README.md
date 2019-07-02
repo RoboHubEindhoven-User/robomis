@@ -8,7 +8,6 @@ In the wiki links bellow, you can find more in-depth information about this pack
 
 **Software Description**
 * [Software Architecture](https://github.com/RoboHubEindhoven/robomis/wiki/Software-Architecture)
-* [UML Class Diagram](https://github.com/RoboHubEindhoven/robomis/wiki/UML-Class-Diagram)
 
 **Getting started on robomis**
 * [Way-point Configuration](https://github.com/RoboHubEindhoven/robomis/wiki/Way-point-Configuration)
