@@ -92,6 +92,8 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent) :
         ui->comboBoxName->addItem(QString::fromStdString(WaypointHelper::getLocationStrByIndex(i)));
     }
 
+    updateLineEditID(true, Qt::gray, Qt::black);
+
     ui->lineEditInstanceId->setText(QString::number(WaypointHelper::getNextInstanceID(configuration.getNrOfWaypointsWithType())));
 
     ui->tableWidgetGoal->verticalHeader()->setVisible(false); // Get Vertical header and hide it
@@ -363,11 +365,12 @@ void MainWindow::on_pBtnAdd_clicked()
 
     mission_protobuf::LocationIdentifier::LocationType loca_type = WaypointHelper::getLocationTypeByIndex(index);
 
-    ui->lineEditInstanceId->setText(QString::number(WaypointHelper::getNextInstanceID(configuration.getNrOfWaypointsWithType(loca_type))));
+    if (!ui->checkBoxCustomID->isChecked())
+        ui->lineEditInstanceId->setText(QString::number(WaypointHelper::getNextInstanceID(configuration.getNrOfWaypointsWithType(loca_type))));
 
     if (WaypointHelper::isUniqueWaypoint(loca_type) && locationAlreadyInList(loca_type)){
         QMessageBox messageBox;
-        messageBox.critical(0,"Error", "Service Area already in List. Only one " + ui->comboBoxName->currentText() + " area can be added.");
+        messageBox.critical(0,"Error", "Waypoint already in List. Only one waypoint with type: " + ui->comboBoxName->currentText() + ", can be added.");
         messageBox.setFixedSize(500,200);
         return;
    }
@@ -375,6 +378,14 @@ void MainWindow::on_pBtnAdd_clicked()
 
     bool scan = ui->checkBoxMarkerScan->isChecked() ? true : false;
     int instance_id   = ui->lineEditInstanceId->text().toInt();
+
+
+    if (configuration.waypointWithLocationExist(WaypointHelper::getLocationTypeNumeral(loca_type), instance_id)){
+        QMessageBox messageBox;
+        messageBox.critical(0,"Error", "Waypoint with with type: " + QString::fromStdString(WaypointHelper::getLocationStrByIndex(index)) + " and instance id:" + QString::number(instance_id) +" already in List. Please assign a different type and/or instance id");
+        messageBox.setFixedSize(500,200);
+        return;
+    }
 
     Location location(
                 WaypointHelper::getLocationTypeNumeral(loca_type),
@@ -788,10 +799,15 @@ void MainWindow::on_pBtnUpdate_clicked()
         return;
     }
 
+
     for(int i = 0; i < selection.count(); i++) {
         QModelIndex index = selection.at(i);
 
         Waypoint *waypoint = configuration.getWaypoint(index.data().toInt());
+
+
+        if (ui->checkBoxCustomID->isChecked())
+            waypoint->location.instance_id = ui->lineEditInstanceId->text().toInt();
 
         std::string name  = ui->comboBoxName->currentText().toUtf8().constData();
         bool scan         = ui->checkBoxMarkerScan->isChecked() ? true : false;
@@ -1224,3 +1240,31 @@ void MainWindow::on_pBtnResetList_clicked()
     ui->tableWidgetWorkServiceAreaProp->clearContents();
     ui->tableWidgetWorkServiceAreaProp->model()->removeRows(0, ui->tableWidgetWorkServiceAreaProp->rowCount());
 }
+
+void MainWindow::on_checkBoxCustomID_stateChanged(int arg1)
+{
+//    if(ui->checkBoxCustomID->isChecked()){
+//        ui->lineEditInstanceId->setReadOnly(false);
+//    }else{
+//        ui->lineEditInstanceId->setReadOnly(true);
+//    }
+}
+
+void MainWindow::on_checkBoxCustomID_clicked()
+{
+    if(ui->checkBoxCustomID->isChecked()){
+        updateLineEditID(false, Qt::white, Qt::black);
+    }else{
+        updateLineEditID(true, Qt::gray, Qt::black);
+    }
+}
+
+void MainWindow::updateLineEditID(bool readOnly, QColor baseColor, QColor textColor) {
+    ui->lineEditInstanceId->setReadOnly(readOnly);
+
+    palette->setColor(QPalette::Base, baseColor);
+    palette->setColor(QPalette::Text, textColor);
+
+    ui->lineEditInstanceId->setPalette(*palette);
+}
+

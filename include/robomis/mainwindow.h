@@ -11,6 +11,7 @@
 #include <QPalette>
 #include <QTimer>
 #include <QMutex>
+//#include "ui_mainwindow.h"
 
 namespace Ui {
 class MainWindowForm;
@@ -127,6 +128,10 @@ private Q_SLOTS:
 
     void on_pBtnResetList_clicked();
 
+    void on_checkBoxCustomID_stateChanged(int arg1);
+
+    void on_checkBoxCustomID_clicked();
+
 private:
 
     void on_button_connect_clicked(bool state);
@@ -143,6 +148,7 @@ private:
     void displayObjectHolder();
     void updateLineEdit(bool readOnly, QColor baseColor, QColor textColor);
     void updateLineEditJointPose(bool readOnly, QColor baseColor, QColor textColor);
+    void updateLineEditID(bool readOnly, QColor baseColor, QColor textColor);
 
     void updateTodoTaskList(int task_type);
     void updateCompletedTaskList(int task_type);

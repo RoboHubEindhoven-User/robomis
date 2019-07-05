@@ -19,13 +19,19 @@ public:
         RobotArmPose = 2,
         Object       = 3
     };
+
+    enum class PrimaryKey: int {
+      Auto   = 0,
+      Custom = 1
+    };
     Configuration();
     ~Configuration();
 
-    void addRobotArmPose(robot_arm::JointPose pose);
-    void addWaypoint(Waypoint waypoint);
+    void addRobotArmPose(robot_arm::JointPose pose, PrimaryKey key = PrimaryKey::Auto);
+    void addWaypoint(Waypoint waypoint, PrimaryKey key = PrimaryKey::Auto);
     void addObject(mission_data::ObjectIdentifier object);
 
+    Waypoint* waypointWithLocationExist(int type, int id);
 
     std::vector<robot_arm::JointPose> getRobotArmPoses(void) const;
     robot_arm::JointPose getRobotArmPoseAtIndex(int index) { return robot_arm_poses[static_cast<size_t>(index)]; }
@@ -59,6 +65,7 @@ private:
     std::vector<Waypoint> waypoints;
     std::vector<mission_data::ObjectIdentifier> objects;
     ConfigFileHandler file_handler;
+
 
 };
 

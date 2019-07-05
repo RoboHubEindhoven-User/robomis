@@ -11,13 +11,15 @@ Configuration::Configuration(){
 Configuration::~Configuration(){
 }
 
-void Configuration::addRobotArmPose(robot_arm::JointPose pose){
-    pose.id = static_cast<int>(robot_arm_poses.size() + 1);
+void Configuration::addRobotArmPose(robot_arm::JointPose pose, PrimaryKey key){
+    if(key == PrimaryKey::Auto)
+        pose.id = static_cast<int>(robot_arm_poses.size() + 1);
     robot_arm_poses.push_back(pose);
 }
 
-void Configuration::addWaypoint(Waypoint waypoint){
-    waypoint.id = static_cast<int>(waypoints.size() + 1);
+void Configuration::addWaypoint(Waypoint waypoint, PrimaryKey key){
+    if(key == PrimaryKey::Auto)
+        waypoint.id = static_cast<int>(waypoints.size() + 1);
     waypoints.push_back(waypoint);
 }
 
@@ -34,6 +36,14 @@ robot_arm::JointPose* Configuration::getRobotArmPose(int id) {
     for (size_t i = 0; i < robot_arm_poses.size(); i++) {
         if(robot_arm_poses[i].id == id)
             return &robot_arm_poses[i];
+    }
+    return nullptr;
+}
+
+Waypoint* Configuration::waypointWithLocationExist(int type, int id) {
+    for (size_t i = 0; i < waypoints.size(); i++) {
+        if((waypoints[i].location.type == type) && (waypoints[i].location.instance_id == id))
+            return &waypoints[i];
     }
     return nullptr;
 }
