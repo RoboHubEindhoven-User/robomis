@@ -28,16 +28,15 @@
 #include <move_base_msgs/MoveBaseActionFeedback.h>
 #include <nav_msgs/Odometry.h>
 
+#include <mission_ros_msgs/TaskObjective.h>
 
 #include "geometry_msgs/PoseStamped.h"
-//#include "geometry_msgs/Twist.h"
 #include <tf/transform_listener.h>
 #include <tf/transform_datatypes.h>
 
 
 #include "robomis/Waypoint.h"
 #include "robomis/WaypointData.h"
-#include <mission_ros_msgs/TaskObjective.h>
 #include "messageaccess.h"
 
 /*****************************************************************************

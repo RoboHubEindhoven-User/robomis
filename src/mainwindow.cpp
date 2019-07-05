@@ -145,11 +145,12 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent) :
     timer2 = new QTimer(this);
     timer3 = new QTimer(this);
 
-    connect(timer1, SIGNAL(timeout()), this, SLOT(RobotPositionDisplay()));
+//    connect(timer1, SIGNAL(timeout()), this, SLOT(RobotPositionDisplay()));
+
 //    timer->start(1000);
 
+    connect(timer1, SIGNAL(timeout()), this, SLOT(updateRobotPositionDisplay()));
     connect(timer2, SIGNAL(timeout()), this, SLOT(updateRobotArmPose()));
-
     connect(timer3, SIGNAL(timeout()), this, SLOT(updateOverViewLists()));
 //    connect(
 //     ui->tableWidgetGoal->selectionModel(),
